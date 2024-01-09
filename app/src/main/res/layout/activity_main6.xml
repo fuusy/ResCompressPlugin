@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+    <Button
+        android:id="@+id/bt_start"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="反射"/>
+
+    <Button
+        android:id="@+id/bt_toast"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="toast"
+        />
+
+    <Button
+        android:id="@+id/bt_imei"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="imei"/>
+
+    <Button
+        android:id="@+id/bt_pag"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="可见性"/>
+
+    <Button
+        android:id="@+id/bt_fifi"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="WIFI"/>
+
+
+    <Button
+        android:id="@+id/bt_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="layout"/>
+
+
+
+
+
+
+</LinearLayout>

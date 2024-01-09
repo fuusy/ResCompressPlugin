@@ -1,0 +1,82 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "ReflectionDemo",
+    "module": "plugin",
+    "version": "unspecified",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.6.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "plugin-unspecified.jar",
+          "url": "plugin-unspecified.jar",
+          "size": 1952,
+          "sha512": "445712ee3b9a722b20088b10b892346ebf5cf9c0e0a4974bfdd6149ca839b4efa0199690175e0d51a0c579a4653bff6d8af3bcabdbdd1b3fa0c8dd09a687da3f",
+          "sha256": "0bc748762c7641310e5d25b13ce8d22aadb1f7aeb4ce7f36dfca71191bcfd007",
+          "sha1": "27267183601e89324ace231531f763301d09814f",
+          "md5": "62d26d33d0cba24176c72e3b218dc9e9"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.6.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "plugin-unspecified.jar",
+          "url": "plugin-unspecified.jar",
+          "size": 1952,
+          "sha512": "445712ee3b9a722b20088b10b892346ebf5cf9c0e0a4974bfdd6149ca839b4efa0199690175e0d51a0c579a4653bff6d8af3bcabdbdd1b3fa0c8dd09a687da3f",
+          "sha256": "0bc748762c7641310e5d25b13ce8d22aadb1f7aeb4ce7f36dfca71191bcfd007",
+          "sha1": "27267183601e89324ace231531f763301d09814f",
+          "md5": "62d26d33d0cba24176c72e3b218dc9e9"
+        }
+      ]
+    }
+  ]
+}
