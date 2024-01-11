@@ -26,7 +26,7 @@ object ImageUtil {
         return file.name.endsWith(JPG) || file.name.endsWith(JPEG)
     }
 
-    fun isAlphaPNG(filePath: File): Boolean {
+    private fun isAlphaPNG(filePath: File): Boolean {
         return if (filePath.exists()) {
             try {
                 val img = ImageIO.read(filePath)
@@ -39,46 +39,24 @@ object ImageUtil {
         }
     }
 
-    fun isBigSizeImage(imgFile: File, maxSize: Int): Boolean {
-        if (isImage(imgFile)) {
-            if (imgFile.length() >= maxSize) {
-                return true
-            }
-        }
-        return false
-    }
-
-    fun isBigPixelImage(imgFile: File, maxWidth: Int, maxHeight: Int): Boolean {
-        if (isImage(imgFile)) {
-            val sourceImg = ImageIO.read(FileInputStream(imgFile))
-            if (sourceImg.height > maxHeight || sourceImg.width > maxWidth) {
-                return true
-            }
-        }
-        return false
-    }
-
-
-    private const val VERSION_SUPPORT_WEBP = 14 //api>=14设设备支持webp
-
     private fun formatWebp(imgFile: File): WebpFileData? {
-        if (ImageUtil.isImage(imgFile)) {
+        if (isImage(imgFile)) {
             val webpFile = File("${imgFile.path.substring(0, imgFile.path.lastIndexOf("."))}.webp")
             Tools.cmd("cwebp", "${imgFile.path} -o ${webpFile.path} -m 6 -quiet")
             val reduceSize = imgFile.length() - webpFile.length()
 
-            if (reduceSize > 0) {
+            return if (reduceSize > 0) {
                 if (imgFile.exists()) {
                     imgFile.delete()
                 }
-                return WebpFileData(imgFile, webpFile, reduceSize)
+                WebpFileData(imgFile, webpFile, reduceSize)
             } else {
                 //如果webp的大的话就抛弃
                 if (webpFile.exists()) {
                     webpFile.delete()
                 }
                 print("webp 过大${imgFile.name}  ${webpFile.absolutePath}")
-                return null
+                null
             }
         }
         return null

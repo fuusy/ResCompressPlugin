@@ -44,71 +44,77 @@ class ResCompressPlugin : Plugin<Project> {
         val hasAppPlugin = p0.plugins.hasPlugin(AppPlugin::class.java)
         if (hasAppPlugin) {
             p0.afterEvaluate {
-                FileUtil.setRootDir(p0.rootDir.path)
-                print("PluginTest Config " + p0.extensions.findByName(CONFIG_NAME))
-                val config: Config? = p0.extensions.findByName(CONFIG_NAME) as? Config
-                val repeatResConfig =
-                    p0.extensions.findByName(REPEAT_RES_CONFIG_NAME) as? RepeatResConfig
-                val compressImgConfig =
-                    p0.extensions.findByName(COMPRESS_IMG_CONFIG_NAME) as? CompressImgConfig
+                kotlin.runCatching {
+                    FileUtil.setRootDir(p0.rootDir.path)
+                    print("PluginTest Config " + p0.extensions.findByName(CONFIG_NAME))
+                    val config: Config? = p0.extensions.findByName(CONFIG_NAME) as? Config
+                    val repeatResConfig =
+                        p0.extensions.findByName(REPEAT_RES_CONFIG_NAME) as? RepeatResConfig
+                    val compressImgConfig =
+                        p0.extensions.findByName(COMPRESS_IMG_CONFIG_NAME) as? CompressImgConfig
 
-                // 不开启插件
-                if (config?.enable == false) {
-                    return@afterEvaluate
-                }
+                    // 不开启插件
+                    if (config?.enable == false) {
+                        return@afterEvaluate
+                    }
 
-                val byType = p0.extensions.getByType(AppExtension::class.java)
+                    val byType = p0.extensions.getByType(AppExtension::class.java)
 
-                byType.applicationVariants.forEach {
-                    val variantName = it.name.capitalize()
-                    val processRes = p0.tasks.getByName("process${variantName}Resources")
-                    processRes.doLast {
-                        val resourcesTask =
-                            it as LinkApplicationAndroidResourcesTask
-                        val files = resourcesTask.resPackageOutputFolder.asFileTree.files
-                        files.filter { file ->
-                            file.name.endsWith(".ap_")
-                        }.forEach { apFile ->
-                            val mapping =
-                                "${p0.buildDir}${File.separator}ResDeduplication${File.separator}mapping${File.separator}"
-                            File(mapping).takeIf { fileMapping ->
-                                !fileMapping.exists()
-                            }?.apply {
-                                mkdirs()
+                    byType.applicationVariants.forEach {
+                        val variantName = it.name.capitalize()
+                        val processRes = p0.tasks.getByName("process${variantName}Resources")
+                        processRes.doLast {
+                            val resourcesTask =
+                                it as LinkApplicationAndroidResourcesTask
+                            val files = resourcesTask.resPackageOutputFolder.asFileTree.files
+                            files.filter { file ->
+                                file.name.endsWith(".ap_")
+                            }.forEach { apFile ->
+                                val mapping =
+                                    "${p0.buildDir}${File.separator}ResDeduplication${File.separator}mapping${File.separator}"
+                                File(mapping).takeIf { fileMapping ->
+                                    !fileMapping.exists()
+                                }?.apply {
+                                    mkdirs()
+                                }
+
+                                val originalLength = apFile.length()
+                                val resCompressFile = File(mapping, REPEAT_RES_MAPPING)
+                                val unZipPath = "${apFile.parent}${File.separator}resCompress"
+                                ZipFile(apFile).unZipFile(unZipPath)
+
+                                // 删除重复图片
+                                deleteRepeatRes(
+                                    unZipPath,
+                                    resCompressFile,
+                                    apFile,
+                                    repeatResConfig?.whiteListName
+                                )
+                                // 压缩图片
+                                compressImg(mapping, compressImgConfig, unZipPath)
+                                apFile.delete()
+
+
+                                println("---f_tag, file name = ${apFile.name}")
+                                ZipOutputStream(apFile.outputStream()).use { output ->
+                                    output.zip(unZipPath, File(unZipPath))
+                                }
+
+                                val lastLength = apFile.length()
+                                print("优化结束缩减：${lastLength - originalLength}")
+                                deleteDir(File(unZipPath))
                             }
-
-                            val originalLength = apFile.length()
-                            val resCompressFile = File(mapping, REPEAT_RES_MAPPING)
-                            val unZipPath = "${apFile.parent}${File.separator}resCompress"
-                            ZipFile(apFile).unZipFile(unZipPath)
-
-                            // 删除重复图片
-                            deleteRepeatRes(
-                                unZipPath,
-                                resCompressFile,
-                                apFile,
-                                repeatResConfig?.whiteListName
-                            )
-                            // 压缩图片
-                            compressImg(mapping, compressImgConfig, unZipPath)
-                            apFile.delete()
-                            ZipOutputStream(apFile.outputStream()).use { output ->
-                                output.zip(unZipPath, File(unZipPath))
-                            }
-
-                            val lastLength = apFile.length()
-                            print("优化结束缩减：${lastLength - originalLength}")
-                            deleteDir(File(unZipPath))
                         }
                     }
                 }
+
             }
         }
     }
 
     private fun compressImg(mappingDir: String, config: CompressImgConfig?, unZipPath: String) {
         if (config?.enable == true) {
-            CompressImgUtil.initTools(config)
+            CompressImgUtil.initTools()
             val mappingFile = File(mappingDir, COMPRESS_IMG_MAPPING)
             runBlocking {
                 print("开始压缩图片---")

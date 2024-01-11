@@ -1,10 +1,6 @@
 package com.fuusy.plugin.rescompress
 
-/**
- * Created on 2024/1/8.
- * @author shiyao.fu
- * @email shiyao.fu@ximalaya.com
- */
+
 open class CompressImgConfig {
     val enable  = true
     val whiteListName: MutableList<String>? = null // 白名单

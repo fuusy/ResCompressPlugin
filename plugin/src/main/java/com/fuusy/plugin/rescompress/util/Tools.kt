@@ -86,7 +86,7 @@ object Tools {
         } else {
             executeCmd("where $cmd")
         }
-        return result != null && !result.isEmpty()
+        return !result.isNullOrEmpty()
     }
 
     private fun executeCmd(cmd: String): String? {

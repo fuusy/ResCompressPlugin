@@ -37,9 +37,6 @@ object CompressImgUtil {
         }
     }
 
-    /**
-     * 如果是webp 修改的图片 就要修改 resources
-     */
     private fun modifyResources(
         webpOkList: CopyOnWriteArrayList<WebpFileData>,
         unZipDir: String
@@ -97,76 +94,75 @@ object CompressImgUtil {
         mappingFile: File,
         unZipDir: String,
         config: CompressImgConfig,
-        webpsLsit: CopyOnWriteArrayList<WebpFileData>
+        webpsList: CopyOnWriteArrayList<WebpFileData>
     ) {
-        val mappginWriter = FileWriter(mappingFile)
-        launch {
-            // 查找所有的图片
-            val file = File("$unZipDir${File.separator}res")
-            file.listFiles()
-                .filter {
-                    it.isDirectory && (it.name.startsWith("drawable") || it.name.startsWith("mipmap"))
-                }
-                .flatMap {
-                    it.listFiles().toList()
-                }
-                .asSequence()
-                .filter {
-                    config.whiteListName?.contains(it.name)?.let { !it } ?: true
-                }
-                .filter {
-                    ImageUtil.isImage(it)
-                }
-                .forEach {
-                    // 进行图片压缩
-                    launch(Dispatchers.Default) {
-                        //                        if (config.checkPixels && ImageUtil.isBigSizeImage(it, config.maxSize)) {
-//                            // 检测是否是大图
-//                        }
-                        when (config.optimizeType) {
+        kotlin.runCatching {
+            val mappginWriter = FileWriter(mappingFile)
+            launch {
+                // 查找所有的图片
+                val file = File("$unZipDir${File.separator}res")
+                file.listFiles()
+                    .filter {
+                        it.isDirectory && (it.name.startsWith("drawable") || it.name.startsWith("mipmap"))
+                    }
+                    .flatMap {
+                        it.listFiles().toList()
+                    }
+                    .asSequence()
+                    .filter {
+                        config.whiteListName?.contains(it.name)?.let { !it } ?: true
+                    }
+                    .filter {
+                        ImageUtil.isImage(it)
+                    }
+                    .forEach {
+                        // 进行图片压缩
+                        launch(Dispatchers.Default) {
+                            when (config.optimizeType) {
 
-                            OPTIMIZE_COMPRESS_PICTURE -> {
-                                val originalPath =
-                                    it.absolutePath.replace("${unZipDir}${File.separator}", "")
-                                val reduceSize = compressImg(it)
-                                if (reduceSize > 0) {
-                                    mappginWriter.synchronizedWriteString("$originalPath => 减少[$reduceSize]")
-                                } else {
-                                    mappginWriter.synchronizedWriteString("$originalPath => 压缩失败")
+                                OPTIMIZE_COMPRESS_PICTURE -> {
+                                    val originalPath =
+                                        it.absolutePath.replace("${unZipDir}${File.separator}", "")
+                                    val reduceSize = compressImg(it)
+                                    if (reduceSize > 0) {
+                                        mappginWriter.synchronizedWriteString("$originalPath => 减少[$reduceSize]")
+                                    } else {
+                                        mappginWriter.synchronizedWriteString("$originalPath => 压缩失败")
+                                    }
                                 }
-                            }
 
-                            OPTIMIZE_WEBP_CONVERT -> {
-                                val webp0K = ImageUtil.securityFormatWebp(it, config)
-                                // 加入可以的 webbp 路径
-                                webp0K?.apply {
-                                    val originalPath = original.absolutePath.replace(
-                                        "${unZipDir}${File.separator}",
-                                        ""
-                                    )
-                                    val webpFilePath = webpFile.absolutePath.replace(
-                                        "${unZipDir}${File.separator}",
-                                        ""
-                                    )
-                                    mappginWriter.synchronizedWriteString("$originalPath => $webpFilePath => 减少[$reduceSize]")
-                                    webpsLsit.add(this)
+                                OPTIMIZE_WEBP_CONVERT -> {
+                                    val webp0K = ImageUtil.securityFormatWebp(it, config)
+                                    // 加入可以的 webbp 路径
+                                    webp0K?.apply {
+                                        val originalPath = original.absolutePath.replace(
+                                            "${unZipDir}${File.separator}",
+                                            ""
+                                        )
+                                        val webpFilePath = webpFile.absolutePath.replace(
+                                            "${unZipDir}${File.separator}",
+                                            ""
+                                        )
+                                        mappginWriter.synchronizedWriteString("$originalPath => $webpFilePath => 减少[$reduceSize]")
+                                        webpsList.add(this)
+                                    }
                                 }
-                            }
 
-                            else -> {
-                                println("图片优化类型 optimizeType [${config.optimizeType}] 不存在,使用 ${OPTIMIZE_COMPRESS_PICTURE} 类型压缩图片!")
+                                else -> {
+                                }
                             }
                         }
                     }
-                }
 
 
-        }.join()
-        mappginWriter.close()
+            }.join()
+            mappginWriter.close()
+        }
+
     }
 
 
-    fun initTools(config: CompressImgConfig) {
+    fun initTools() {
         if (Tools.isLinux()) {
             Tools.chmod()
         }

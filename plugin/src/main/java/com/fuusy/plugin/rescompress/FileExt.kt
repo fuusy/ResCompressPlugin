@@ -5,6 +5,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.FileWriter
+import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -93,7 +94,15 @@ fun ZipOutputStream.zip(srcRootDir: String, file: File) {
             subPath = subPath.substring(srcRootDir.length + File.separator.length)
         }
         subPath = subPath.replace("\\","/")
-        val entry = ZipEntry(subPath)
+        val entry = ZipEntry(subPath).apply {
+            setLevel(ZipOutputStream.STORED)
+            method = ZipEntry.STORED
+            compressedSize = file.length()
+            size = file.length()
+            val crc = CRC32()
+            crc.update(file.readBytes())
+            setCrc(crc.value)
+        }
         putNextEntry(entry)
 
         FileInputStream(file).use {
